@@ -124,7 +124,7 @@ resources:
         apt-get install -y git apache2-utils
 
         htpasswd -bc /tmp/htpasswd $kibana_user $kibana_passwd
-        echo "elastic:" >> /srv/pillar/elk.sls
+        echo "elastic:" > /srv/pillar/elk.sls
         echo "  htpasswd: |" >> /srv/pillar/elk.sls
         echo -n "    " >> /srv/pillar/elk.sls
         cat /tmp/htpasswd >> /srv/pillar/elk.sls
@@ -233,10 +233,10 @@ resources:
           base:
             'roles:elk':
               - match: grain
-              - elasticsearch-logstash-kibana-formula.elk
+              - elk-formula.elk
             'roles:haproxy':
               - match: grain
-              - elasticsearch-logstash-kibana-formula.elk.haproxy
+              - elk-formula.elk.haproxy
 
         /srv/pillar/top.sls: |
           base:
