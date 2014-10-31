@@ -13,13 +13,6 @@ layout: default
   </header>
 
   <div class="content-section">
-    <p>
-    {% capture intro %}{% include intro.md %}{% endcapture %}
-    {{ intro | markdownify }}
-    </p>
-  </div>
-
-  <div class="content-section">
     <h2 class="post-heading">About {{ site.template_name }}</h2>
     {% capture about %}{% include about.md %}{% endcapture %}
     {{ about | markdownify }}

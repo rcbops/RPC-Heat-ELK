@@ -151,6 +151,10 @@
     }
 }
 
+.disclaimer {
+    font-size: 12px;
+}
+
 @include media-query($on-palm) {
     .footer-col {
         float: none;
@@ -158,7 +162,6 @@
         width:         calc(100% - (#{$spacing-unit} / 2));
     }
 }
-
 
 
 /**
