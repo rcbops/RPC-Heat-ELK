@@ -1,7 +1,7 @@
 - Logstash chooses Elasticsearch Data Index sizes, which can be
 tailored to your log data for best analysis performance
 - While the template allows for as few as one Elasticsearch node, we
-recommend a minimum of 3 for redundancy and data access speed.
+recommend a minimum of three for redundancy and data access speed.
 - You can segment your logging agents to point to any Logstash server
 which allows for horizontal growth of Logstash endpoints. When one
 Logstash server is overwhelmed, you can just point your agents to
