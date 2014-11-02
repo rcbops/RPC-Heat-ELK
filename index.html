@@ -28,49 +28,11 @@ layout: default
     <h2 class="post-heading">Design Specifications</h2>
     {% capture design %}{% include design.md %}{% endcapture %}
     {{ design | markdownify }}
-  </div>
-
-  <div class="content-section">
-    <h2 class="post-heading">Ready to get started?</h2>
-
-    <div class="row">
-      <div class="col col-3">
-        <h3>Community</h3>
-        <p>
-        Our code is open source and hosted on GitHub.
-        </p>
-        <div class="fancy-btn">
-        <a class="btn" href="{{ site.project_url }}">
-          Join Us
-        </a>
-        </div>
-      </div>
-
-      <div class="col col-3">
-        <h3>Documentation</h3>
-        <p>
-        Our docs are kept up-to-date and written with you in mind.
-        </p>
-        <div class="fancy-btn">
-        <a class="btn" 
-            href="{{ site.release_notes_url }}">
-            Start Reading
-        </a>
-        </div>
-      </div>
-
-      <div class="col col-3">
-        <h3>Source</h3>
-        <p>
-        Get started by downloading the latest version.
-        </p>
-        <div class="fancy-btn">
-        <a class="btn"
-            href="{{ site.releases_url }}">
-            Download Now
-        </a>
-        </div>
-      </div>
+    <div class="fancy-btn">
+    <a class="btn"
+        href="{{ site.latest_release_url }}">
+        Download Now
+    </a>
     </div>
   </div>
 </div>

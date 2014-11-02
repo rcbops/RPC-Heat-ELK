@@ -12,6 +12,7 @@ faq_url: http://docs.rackspace.com/rpc/api/v9/rpc-faq-v9/content/rpc-common-fron
 release_notes_url: &release_notes_url http://docs.rackspace.com/rpc/api/v9/bk-rpc-releasenotes/content/rpc-common-front.html
 project_url: &project_url https://github.com/rcbops/RPC-Heat-ELK
 releases_url: &releases_url https://github.com/rcbops/RPC-Heat-ELK/releases/
+latest_release_url: *releases_url # CHANGE ME
 
 # Build settings
 markdown: kramdown
