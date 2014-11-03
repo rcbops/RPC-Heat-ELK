@@ -77,6 +77,12 @@ resources:
         - protocol: tcp
           port_range_min: 4505
           port_range_max: 4506
+        - protocol: tcp
+          port_range_min: 9200
+          port_range_max: 9200
+        - protocol: tcp
+          port_range_min: 9300
+          port_range_max: 9300
 
   # Keypair for communicating between nodes within the stack.
   # Will allow minions to ssh into the master and vice versa.
@@ -162,7 +168,6 @@ resources:
         elasticsearch:
           cluster: es-cluster-$stackstr
         kibana:
-          httpport: 80
           site_name: kibana.cdp
           wwwhome: /var/www
           htpasswd: HTPASSWD_STR
