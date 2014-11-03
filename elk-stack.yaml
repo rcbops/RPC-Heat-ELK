@@ -245,7 +245,7 @@ resources:
             - coms
             - public_key
         state_repos: |
-          https://github.com/dani4571/elk-formula.git
+          https://github.com/rcbops/elk-formula.git
         kibana_passwd:
           - get_param: kibana-passwd
         kibana_user:
