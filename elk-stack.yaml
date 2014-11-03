@@ -78,6 +78,9 @@ resources:
           port_range_min: 4505
           port_range_max: 4506
         - protocol: tcp
+          port_range_min: 5544
+          port_range_max: 5544
+        - protocol: tcp
           port_range_min: 9200
           port_range_max: 9200
         - protocol: tcp
@@ -168,6 +171,7 @@ resources:
         elasticsearch:
           cluster: es-cluster-$stackstr
         kibana:
+          httpport: 80
           site_name: kibana.cdp
           wwwhome: /var/www
           htpasswd: HTPASSWD_STR
@@ -304,6 +308,9 @@ resources:
               - match: grain
               - elk
             'roles:kibana':
+              - match: grain
+              - elk
+            'roles:haproxy':
               - match: grain
               - elk
 
