@@ -31,6 +31,9 @@ parameters:
   minion-roles:
     type: string
     description: List of roles for the minion
+  security-group:
+    type: string
+    description: Id of security group
 
 resources:
 
@@ -89,6 +92,8 @@ resources:
             get_param: network
 
       user_data_format: SOFTWARE_CONFIG
+      security_groups:
+        - get_param: security-group
 
 outputs:
   minion-ip:
