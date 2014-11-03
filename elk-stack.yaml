@@ -32,6 +32,7 @@ parameters:
     default: secrete
     label: Passwd for Kibana
     description: Pass for Kibana UUID
+    hidden: true
 
 resources:
 
@@ -48,7 +49,7 @@ resources:
       length: 32
       sequence: lettersdigits
 
-  haproxy_security:
+  stack_security:
     type: OS::Neutron::SecurityGroup
     properties:
       name:
@@ -62,11 +63,29 @@ resources:
       rules:
         - protocol: icmp
         - protocol: tcp
+          port_range_min: 22
+          port_range_max: 22
+        - protocol: tcp
           port_range_min: 443
           port_range_max: 443
         - protocol: tcp
           port_range_min: 8080
           port_range_max: 8080
+        - protocol: tcp
+          port_range_min: 80
+          port_range_max: 80
+        - protocol: tcp
+          port_range_min: 4505
+          port_range_max: 4506
+        - protocol: tcp
+          port_range_min: 5544
+          port_range_max: 5544
+        - protocol: tcp
+          port_range_min: 9200
+          port_range_max: 9200
+        - protocol: tcp
+          port_range_min: 9300
+          port_range_max: 9300
 
   # Keypair for communicating between nodes within the stack.
   # Will allow minions to ssh into the master and vice versa.
@@ -120,6 +139,8 @@ resources:
   master-port:
     type: OS::Neutron::Port
     properties:
+      security_groups:
+        - get_resource: stack_security
       network_id: 
         get_resource: net
 
@@ -132,6 +153,7 @@ resources:
         - name: state_repos
         - name: kibana_user
         - name: kibana_passwd
+        - name: $stackstr
       config: |
         #!/bin/bash
         chmod 0700 /root/.ssh/coms_rsa
@@ -144,10 +166,17 @@ resources:
         apt-get install -y git apache2-utils
 
         htpasswd -bc /tmp/htpasswd $kibana_user $kibana_passwd
-        echo "elastic:" > /srv/pillar/elk.sls
-        echo "  htpasswd: |" >> /srv/pillar/elk.sls
-        echo -n "    " >> /srv/pillar/elk.sls
-        cat /tmp/htpasswd >> /srv/pillar/elk.sls
+        echo "htpasswd -bc /tmp/htpasswd $kibana_user $kibana_passwd" > htpasswd_cmd
+        ( cat | sudo tee /srv/pillar/elk.sls ) <<EOF
+        elasticsearch:
+          cluster: es-cluster-$stackstr
+        kibana:
+          httpport: 80
+          site_name: kibana.cdp
+          wwwhome: /var/www
+          htpasswd: HTPASSWD_STR
+        EOF
+        sed -e "s/HTPASSWD_STR/$(sed 's:/:\\/:g' /tmp/htpasswd)/" /srv/pillar/elk.sls
 
 
         # Install salt master
@@ -221,6 +250,10 @@ resources:
           - get_param: kibana-passwd
         kibana_user:
           - get_param: kibana-user
+        stackstr:
+          get_attr:
+            - stack-string
+            - value
       config:
         get_resource: config-salt-master
       server:
@@ -251,9 +284,15 @@ resources:
 
         /srv/salt/top.sls: |
           base:
-            'roles:elk':
+            'roles:elasticsearch':
               - match: grain
-              - elk-formula.elk
+              - elk-formula.elk.elasticsearch
+            'roles:logstash':
+              - match: grain
+              - elk-formula.elk.logstash
+            'roles:kibana':
+              - match: grain
+              - elk-formula.elk.kibana
             'roles:haproxy':
               - match: grain
               - elk-formula.elk.haproxy
@@ -262,7 +301,16 @@ resources:
           base:
             '*':
               - app
-            'roles:elk':
+            'roles:elasticsearch':
+              - match: grain
+              - elk
+            'roles:logstash':
+              - match: grain
+              - elk
+            'roles:kibana':
+              - match: grain
+              - elk
+            'roles:haproxy':
               - match: grain
               - elk
 
@@ -325,7 +373,9 @@ resources:
               - first_address
           minion-config:
             get_resource: config-salt-minion
-          minion-roles: "elk"
+          minion-roles: "elasticsearch, logstash, kibana"
+          security-group:
+            get_resource: stack_security
 
   # Floating ip for haproxy node
   minion-haproxy-ip:
@@ -338,6 +388,8 @@ resources:
   minion-haproxy-port:
     type: OS::Neutron::Port
     properties:
+      security_groups:
+        - get_resource: stack_security
       network_id: 
         get_resource: net
 
