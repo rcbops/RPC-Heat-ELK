@@ -54,7 +54,7 @@ resources:
       config:
         get_param: minion-config
       server:
-        get_resource: minion 
+        get_resource: minion
 
   minion:
     type: OS::Nova::Server
@@ -71,7 +71,7 @@ resources:
                 - stack-string
                 - value
 
-      image: 
+      image:
         get_param: image
 
       flavor:
@@ -88,7 +88,7 @@ resources:
                 get_param: minion-roles
 
       networks:
-        - network: 
+        - network:
             get_param: network
 
       user_data_format: SOFTWARE_CONFIG
