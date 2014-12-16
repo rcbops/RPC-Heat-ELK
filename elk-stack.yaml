@@ -100,7 +100,7 @@ resources:
            $stackstr:
              get_attr:
                - stack-string
-               - value      
+               - value
 
   net:
     type: OS::Neutron::Net
@@ -119,7 +119,7 @@ resources:
     type: OS::Neutron::Router
     properties:
       external_gateway_info:
-        network: 
+        network:
           get_param: floating-network-id
 
   interface:
@@ -127,13 +127,13 @@ resources:
     properties:
       router_id:
         get_resource: router
-      subnet_id: 
+      subnet_id:
         get_resource: subnet
 
   master-ip:
     type: OS::Neutron::FloatingIP
     properties:
-      floating_network_id: 
+      floating_network_id:
         get_param: floating-network-id
 
   master-port:
@@ -141,7 +141,7 @@ resources:
     properties:
       security_groups:
         - get_resource: stack_security
-      network_id: 
+      network_id:
         get_resource: net
 
   config-salt-master:
@@ -156,8 +156,15 @@ resources:
         - name: $stackstr
       config: |
         #!/bin/bash
+        set -ex
+        logdir=/var/log/heat-deployments
+        prefix=${logdir}/config-salt-master
+        mkdir -p $logdir
+        exec &> >(tee -a ${prefix}.log)
+        [ -e ${prefix}.ran ] && exit 0
+
+        chmod -R 0600 ${logdir}
         chmod 0700 /root/.ssh/coms_rsa
-        chmod 0600 /srv/pillar/elk.sls
 
         # Add coms from minions to master
         echo "$public_key" >> /root/.ssh/authorized_keys
@@ -177,12 +184,13 @@ resources:
           htpasswd: HTPASSWD_STR
         EOF
         sed -e "s/HTPASSWD_STR/$(sed 's:/:\\/:g' /tmp/htpasswd)/" /srv/pillar/elk.sls
+        chmod 0600 /srv/pillar/elk.sls
 
 
         # Install salt master
         echo "Install Salt Master"
-        curl -L http://bootstrap.saltstack.org | sh -s -- -M -N
-        mkdir /srv/salt
+        curl -L http://bootstrap.saltstack.org | sh -s -- -M -N git v2014.1.13
+        mkdir -p /srv/salt
         echo -e 'file_roots:\n  base:\n    - /srv/salt' >> /etc/salt/master
 
         # Clone state/formula repos in state root directory
@@ -195,6 +203,7 @@ resources:
         done <<< "$state_repos"
         # Finally - Restart salt service
         service salt-master restart
+        touch ${prefix}.ran
 
   config-salt-minion:
     type: OS::Heat::SoftwareConfig
@@ -205,26 +214,36 @@ resources:
         - name: master
       config: |
         #!/bin/bash
+        set -ex
+        logdir=/var/log/heat-deployments
+        prefix=${logdir}/config-salt-minion
+        mkdir -p $logdir
+        exec &> >(tee -a ${prefix}.log)
+        [ -e ${prefix}.ran ] && exit 0
+
+        chmod -R 0600 ${logdir}
         chmod 0700 /root/.ssh/coms_rsa
-            
+
         # Add coms from minions to master
         echo "$public_key" >> /root/.ssh/authorized_keys
 
         # Install salt minion
-        curl -L http://bootstrap.saltstack.org | sh -s
+        curl -L http://bootstrap.saltstack.org | sh -s -- git v2014.1.13
         echo master: $master >> /etc/salt/minion
 
         service salt-minion restart
 
         ssh-keyscan -H $master >> /root/.ssh/known_hosts
 
-        echo "Sleeping for 20s"
-        sleep 20
-
         MASTER_PKI_PATH="/etc/salt/pki/master/minions/"
         MASTER_PKI_PATH_PRE="/etc/salt/pki/master/minions_pre/"
         MINION_PKI_PATH="/etc/salt/pki/minion/minion.pub"
-        HOSTNAME=`hostname --fqdn`
+        HOSTNAME="$(python  -c 'import socket; print socket.getfqdn()')"
+
+        while [ ! -s ${MINION_PKI_PATH} ]; do
+            echo "Waiting for ${MINION_PKI_PATH} to have non-zero content."
+            sleep 2
+        done
 
         cp $MINION_PKI_PATH /root/minion_key
 
@@ -235,6 +254,7 @@ resources:
         service salt-minion restart
         rm /root/minion_key
         rm /root/.ssh/coms_rsa
+        touch ${prefix}.ran
 
   deploy-salt-master:
     type: OS::Heat::SoftwareDeployment
@@ -265,7 +285,7 @@ resources:
     properties:
       key_name:
         get_param: keyname
-      image: 
+      image:
         get_param: image
       flavor: m1.small
       name:
@@ -328,9 +348,9 @@ resources:
             get_resource: master-port
       user_data_format: SOFTWARE_CONFIG
 
-  master-floating-ip-ass: 
+  master-floating-ip-ass:
     type: OS::Neutron::FloatingIPAssociation
-    properties: 
+    properties:
       floatingip_id:
         get_resource: master-ip
       port_id:
@@ -340,12 +360,12 @@ resources:
     type: OS::Heat::ResourceGroup
     depends_on: deploy-salt-master
     properties:
-      count: 
+      count:
         get_param: minion-count-elk
       resource_def:
         type: Salt::Minion
         properties:
-          flavor: 
+          flavor:
             get_param: minion-flavor-elk
           stack-prefix:
             str_replace:
@@ -381,7 +401,7 @@ resources:
   minion-haproxy-ip:
     type: OS::Neutron::FloatingIP
     properties:
-      floating_network_id: 
+      floating_network_id:
         get_param: floating-network-id
 
   # Port for haproxy node
@@ -390,7 +410,7 @@ resources:
     properties:
       security_groups:
         - get_resource: stack_security
-      network_id: 
+      network_id:
         get_resource: net
 
   # haproxy minion
@@ -431,9 +451,9 @@ resources:
       user_data_format: SOFTWARE_CONFIG
 
   # Associate haproxy floating ip to the port
-  minion-haproxy-floating-ip-ass: 
+  minion-haproxy-floating-ip-ass:
     type: OS::Neutron::FloatingIPAssociation
-    properties: 
+    properties:
       floatingip_id:
         get_resource: minion-haproxy-ip
       port_id:
@@ -464,9 +484,16 @@ resources:
       group: script
       config: |
         #!/bin/bash
+        set -ex
+        logdir=/var/log/heat-deployments
+        prefix=${logdir}/config-deploy
+        mkdir -p $logdir
+        exec &> >(tee -a ${prefix}.log)
+        [ -e ${prefix}.ran ] && exit 0
         salt '*' saltutil.refresh_pillar
         salt '*' mine.update
         salt '*' state.highstate
+        touch ${prefix}.ran
 
   deploy:
     type: OS::Heat::SoftwareDeployment
@@ -483,7 +510,7 @@ resources:
 
 outputs:
   master-ip:
-    value: 
+    value:
       get_attr:
         - master-ip
         - floating_ip_address
