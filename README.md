@@ -45,7 +45,7 @@ Here is an example of how to deploy this template using the
 [python-heatclient](https://github.com/openstack/python-heatclient):
 
 ```
-heat stack-create hadoop-stack -f hadoop-stack.yaml \
+heat stack-create elk-stack -f elk-stack.yaml \
   -e env.yaml -P flavor=m1.large;floating-network-id=<NET_ID>; \
   datanodes-count=<COUNT>;keyname=<KEYNAME>;image=<IMAGE_ID>
 ```
@@ -53,7 +53,7 @@ heat stack-create hadoop-stack -f hadoop-stack.yaml \
 Using Horizon
 =============
 You can also go to your Horizon Dashboard in your browser and create 
-the Hadoop stack from under the Orchestration tab.
+the ELK stack from under the Orchestration tab.
 
 License
 =======

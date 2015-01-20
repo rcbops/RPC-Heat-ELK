@@ -1,0 +1,47 @@
+release: 1.0
+
+short_desc: >
+                RPC-Heat-ELK delivers a deployable configuration of Elastic Search, Logstash 
+                and Kibana using the Heat orchestration engine available in any Rackspace 
+                OpenStack Private Cloud.
+
+long_desc: >
+                The ELK stack consists of three distinct projects that work together to provide
+                real-time analysis and visualization for almost any type of data.
+
+                Elasticsearch is a real-time search and analytics engine built with reliability and scalability in mind. 
+                It provides more than the classic full-text search through APIs and a number of clients for most popular languages.
+
+                Logstash acts as a middleman by taking logs or event data from a system converting them to JSON objects and storing them
+                elsewhere. In the ELK stack logstash saves all data in elasticsearch.
+
+                Kibana is the visualization engine for elasticsearch. It is highly customizable and allows users to save, share and export data.
+                Queries are displayed in real time allowing humans to easily view and understand large amounts of data.
+
+architecture: >
+                With a deployment driven by the OpenStack Heat 
+                orchestration engine and Salt configuration management, we are able to deliver 
+                ELK stack as a repeatable, scalable, production-ready deployment.
+
+design_specs:
+            - >
+                Elasticsearch nodes are automatically clustered. Each node provides extra resiliency
+                and resources for higher rates of traffic.
+            - > 
+                Load for all ELK services is balanced between available servers.
+            - >
+                Logstash configuration can be managed and applied via salt. This allows users to quickly customize 
+                the sources and format of input data in a way that works best for their system.
+            - >
+                Network isolation and security group isolation at various levels within the stack 
+                provide enhanced Cloud security.
+
+
+questions:
+  keyname: Name of ssh keypair for logging in to salt master instances
+  image: Name of the image to be used for all instances
+  floating-network-id: UUID of the external network that will provide floating IPs
+  minion-count-elk: Number of ELK nodes. Each will have logstash and kibana.
+  minion-flavor-elk: Flavor (cpu/mem and disk size) for all servers in the stack.
+  kibana-user: Name of user for Kibana
+  kibana-passwd: Passwd for Kibana
