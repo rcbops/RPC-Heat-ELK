@@ -2,6 +2,16 @@ heat_template_version: 2013-05-23
 
 description: Deploys a salt master with ELK stack cluster
 
+parameter_groups:
+  - parameters:
+    - keyname
+    - image
+    - floating-network-id
+    - minion-count-elk
+    - minion-flavor-elk
+    - kibana-user
+    - kibana-paswd
+
 parameters:
   keyname:
     type: string

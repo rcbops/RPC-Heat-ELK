@@ -1,4 +1,6 @@
+name: ELK Stack
 release: 1.0
+#logo: assets/logo.png
 
 short_desc: >
                 RPC-Heat-ELK delivers a deployable configuration of Elastic Search, Logstash 
@@ -36,12 +38,5 @@ design_specs:
                 Network isolation and security group isolation at various levels within the stack 
                 provide enhanced Cloud security.
 
-
-questions:
-  keyname: Name of ssh keypair for logging in to salt master instances
-  image: Name of the image to be used for all instances
-  floating-network-id: UUID of the external network that will provide floating IPs
-  minion-count-elk: Number of ELK nodes. Each will have logstash and kibana.
-  minion-flavor-elk: Flavor (cpu/mem and disk size) for all servers in the stack.
-  kibana-user: Name of user for Kibana
-  kibana-passwd: Passwd for Kibana
+heat_template: elk_stack.yaml
+env_file: env.yaml
