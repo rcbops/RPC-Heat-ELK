@@ -38,5 +38,5 @@ design_specs:
                 Network isolation and security group isolation at various levels within the stack 
                 provide enhanced Cloud security.
 
-heat_template: elk_stack.yaml
+heat_template: elk-stack.yaml
 env_file: env.yaml
