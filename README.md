@@ -28,7 +28,7 @@ Requirements
   * OS::Nova::Server
   * OS::Nova::KeyPair
 
-* An Ubuntu image (12.04 or newer) preconfigured with heat-cfntools and heat confog-script. 
+* An Ubuntu image (12.04 or newer) preconfigured with heat-cfntools and heat config-script. 
 Instructions for creating a heat-cfntools enabled image for use with Heat can be 
 found [here] (http://docs.openstack.org/developer/heat/getting_started/jeos_building.html).
 
