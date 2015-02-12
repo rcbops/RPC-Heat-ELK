@@ -10,7 +10,7 @@ parameter_groups:
     - minion-count-elk
     - minion-flavor-elk
     - kibana-user
-    - kibana-paswd
+    - kibana-password
 
 parameters:
   keyname:
@@ -37,10 +37,10 @@ parameters:
     default: admin
     label: User for Kibana
     description: User for Kibana UUID
-  kibana-passwd:
+  kibana-password:
     type: string
     default: secrete
-    label: Passwd for Kibana
+    label: Password for Kibana
     description: Pass for Kibana UUID
     hidden: true
 
@@ -277,7 +277,7 @@ resources:
         state_repos: |
           https://github.com/rcbops/elk-formula.git
         kibana_passwd:
-          - get_param: kibana-passwd
+          - get_param: kibana-password
         kibana_user:
           - get_param: kibana-user
         stackstr:
