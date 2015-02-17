@@ -10,7 +10,7 @@ parameter_groups:
     - minion-count-elk
     - minion-flavor-elk
     - kibana-user
-    - kibana-paswd
+    - kibana-passwd
 
 parameters:
   keyname:

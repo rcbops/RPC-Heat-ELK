@@ -1,6 +1,6 @@
 name: ELK Stack
 release: 1.0
-#logo: assets/logo.png
+logo: assets/logo.png
 
 short_desc: >
                 RPC-Heat-ELK delivers a deployable configuration of Elastic Search, Logstash 
