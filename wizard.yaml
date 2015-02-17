@@ -3,40 +3,29 @@ release: 1.0
 logo: assets/logo.png
 
 short_desc: >
-                RPC-Heat-ELK delivers a deployable configuration of Elastic Search, Logstash 
-                and Kibana using the Heat orchestration engine available in any Rackspace 
-                OpenStack Private Cloud.
+                RPC-Heat-ELK delivers a deployable configuration of Elasticsearch, Logstash, and Kibana using OpenStack Orchestration (heat), available in any Rackspace OpenStack Private Cloud.
 
 long_desc: >
-                The ELK stack consists of three distinct projects that work together to provide
-                real-time analysis and visualization for almost any type of data.
+                The ELK stack consists of three distinct projects that work together to provide real-time analysis and visualization for almost any type of data.
 
-                Elasticsearch is a real-time search and analytics engine built with reliability and scalability in mind. 
-                It provides more than the classic full-text search through APIs and a number of clients for most popular languages.
+                Elasticsearch is a real-time search and analytics engine built with reliability and scalability in mind. It provides functionality beyond the classic full-text search through APIs and a number of clients for most popular languages.
 
-                Logstash acts as a middleman by taking logs or event data from a system converting them to JSON objects and storing them
-                elsewhere. In the ELK stack logstash saves all data in elasticsearch.
+                Logstash acts as a middleman by taking logs or event data from a system converting them to JSON objects and storing them elsewhere. In the ELK stack, logstash saves all data in Elasticsearch.
 
-                Kibana is the visualization engine for elasticsearch. It is highly customizable and allows users to save, share and export data.
-                Queries are displayed in real time allowing humans to easily view and understand large amounts of data.
+                Kibana is the visualization engine for Elasticsearch. It is highly customizable and allows users to save, share and export data. Queries are displayed in real time, enabling users to easily view and understand large amounts of data.
 
 architecture: >
-                With a deployment driven by the OpenStack Heat 
-                orchestration engine and Salt configuration management, we are able to deliver 
-                ELK stack as a repeatable, scalable, production-ready deployment.
+                With a deployment driven by OpenStack Orchestration and Salt configuration management, we are able to deliver an ELK stack as a repeatable, scalable, production-ready deployment.
 
 design_specs:
             - >
-                Elasticsearch nodes are automatically clustered. Each node provides extra resiliency
-                and resources for higher rates of traffic.
+                Elasticsearch nodes are automatically clustered. Each node provides extra resiliency and resources for higher rates of traffic.
             - > 
                 Load for all ELK services is balanced between available servers.
             - >
-                Logstash configuration can be managed and applied via salt. This allows users to quickly customize 
-                the sources and format of input data in a way that works best for their system.
+                Logstash configuration can be managed and applied via Salt. This enables users to quickly customize the sources and format of input data according to their individual system needs.
             - >
-                Network isolation and security group isolation at various levels within the stack 
-                provide enhanced Cloud security.
+                Network isolation and security group isolation at various levels within the stack provide enhanced Cloud security.
 
 heat_template: elk-stack.yaml
 env_file: env.yaml
