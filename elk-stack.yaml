@@ -15,33 +15,36 @@ parameter_groups:
 parameters:
   keyname:
     type: string
-    description: Key name for loggin in to instances
+    label: Key Name
+    description: Name of the key used to log in to the instances.
   image:
     type: string
-    description: Image name
+    label: Image Name
+    description: Name of the image used to create this stack.
   floating-network-id:
     type: string
-    description: UUID of the external network. The private network created by this stack will route to this network. Also any floating ip's needed by this stack will come this network. 
+    label: Floating Network ID
+    description: UUID of the external network. The private network created by this stack will route to this network. Any floating IP addresses needed by this stack will also route to this network. 
   minion-count-elk:
     type: number
     default: 1
-    label: Number of Elasticsearch nodes
-    description: How many nodes will be required.
+    label: Number of Elasticsearch Nodes
+    description: Number of Elasticsearch nodes required for this stack.
   minion-flavor-elk:
     type: string
     default: m1.small
-    label: Flavor of elk servers
-    description: Flavor (image size) of elk servers to be created.
+    label: Flavor of ELK Servers
+    description: Flavor (image size) of the ELK servers in this stack.
   kibana-user:
     type: string
     default: admin
-    label: User for Kibana
-    description: User for Kibana UUID
+    label: Kibana User ID
+    description: UUID of the Kibana user.
   kibana-passwd:
     type: string
     default: secrete
-    label: Passwd for Kibana
-    description: Pass for Kibana UUID
+    label: Kibana Password
+    description: Password for the Kibana UUID.
     hidden: true
 
 resources:
