@@ -1,4 +1,4 @@
-As applications grow and get more distributed, focusing on business
+As applications grow and become more distributed, focusing on business
 metrics and true performance/uptime is key to measuring your success.
 Without proper tooling, it can be difficult to derive those key
 performance metrics and the data to support them. This platform is the
