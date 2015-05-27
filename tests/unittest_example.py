@@ -36,15 +36,15 @@ class TestTemplate(unittest.TestCase):
             raise Exception('No heat endpoint found')
 
         heat = Client('1', endpoint=heat_endpoint, token=token)
-        params_list = [
-            ('keyname', 'heat_test_key'),
-            ('image', 'HeatImage'),
-            ('floating-network-id', 'f8b75425-ab2e-41db-b18f-b38a36fbc8e7'),
-            ('minion-count-elk', 1),
-            ('minion-flavor-elk', 'm1.medium'),
-            ('kibana-user', 'admin'),
-            ('kibana-passwd', 'secrete')
-        ]
+        params_list = {
+            'keyname': 'heat_test_key',
+            'image': 'HeatImage',
+            'floating-network-id': 'f8b75425-ab2e-41db-b18f-b38a36fbc8e7',
+            'minion-count-elk': 1,
+            'minion-flavor-elk': 'm1.medium',
+            'kibana-user': 'admin',
+            'kibana-passwd': 'secrete'
+        }
 
 
         
@@ -56,10 +56,10 @@ class TestTemplate(unittest.TestCase):
 
         template_data = ''
         with open('../elk-stack.yaml') as f:
-            fields['template'] = f.readlines()
+            fields['template'] = f.read()
 
         with open('../env.yaml') as f:
-            fields['environment'] = f.readlines()
+            fields['environment'] = f.read()
         
         heat.stacks.create(**fields)
         
