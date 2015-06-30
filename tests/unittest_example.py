@@ -14,6 +14,8 @@ import heatclient
 from heatclient.client import Client as heat_client
 from neutronclient.neutron import client as neutron_client
 
+from elasticsearch import Elasticsearch
+
 log = logging.getLogger(__name__)
 
 class TestTemplate(unittest.TestCase):
@@ -62,32 +64,45 @@ class TestTemplate(unittest.TestCase):
         with open('../env.yaml') as f:
             fields['environment'] = f.read()
 
-        test_stack = heat.stacks.create(**fields)
-        self.test_stack_id = test_stack['stack']['id']
+        #test_stack = heat.stacks.create(**fields)
+        #self.test_stack_id = test_stack['stack']['id']
+        self.test_stack_id = 'f9eec6db-cc62-4fe9-b5e7-5a49dc559fa1'
 
         while True:
-            stack_info = heat.stacks.get(self.test_stack_id)
-            if stack_info.stack_status == 'CREATE_IN_PROGRESS':
+            self.stack_info = heat.stacks.get(self.test_stack_id)
+            if self.stack_info.stack_status == 'CREATE_IN_PROGRESS':
                 time.sleep(10)
                 log.debug("Waiting for stack completion")
-            elif stack_info.stack_status == 'CREATE_COMPLETE':
+            elif self.stack_info.stack_status == 'CREATE_COMPLETE':
                 log.debug("Stack successful")
                 break
             else:
                 log.debug("Stack failed")
-                raise Exception(stack_info.stack_status, 'Stack failed with reason: %s' % stack_info.stack_status_reason)
+                raise Exception(self.stack_info.stack_status, 'Stack failed with reason: %s' % self.stack_info.stack_status_reason)
 
-        print heat.stacks.get(self.test_stack_id)
-        
+
     @classmethod
     def tearDownClass(self):
         self.keystone.authenticate()
         token = self.keystone.auth_token
         heat = heat_client('1', endpoint=self.heat_endpoint, token=token)
-        heat.stacks.delete(self.test_stack_id)
+        #heat.stacks.delete(self.test_stack_id)
 
-    #def test_elasticsearch(self):
-    #    pass
+    def test_elasticsearch(self):
+        haproxy_ip = None
+        for output in self.stack_info.outputs:
+            if output['output_key'] == 'minion-haproxy-ip':
+                haproxy_ip = output['output_value']
+
+        if haproxy_ip is None:
+            raise Exception("Unable to find IP of stack VM")
+
+        es = Elasticsearch([haproxy_ip])
+
+        
+        print dir(es)
+        print es.search()
+        
 
     #def test_kibana(self):
     #    pass
