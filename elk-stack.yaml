@@ -180,6 +180,7 @@ resources:
         echo "$public_key" >> /root/.ssh/authorized_keys
 
         # Install git
+        apt-get update -y
         apt-get install -y git apache2-utils
 
         htpasswd -bc /tmp/htpasswd $kibana_user $kibana_passwd
@@ -519,6 +520,11 @@ resources:
 
 
 outputs:
+  minion-haproxy-ip:
+    value:
+      get_attr:
+        - minion-haproxy-ip
+        - floating_ip_address
   master-ip:
     value:
       get_attr:
