@@ -18,43 +18,62 @@ from elasticsearch import Elasticsearch
 
 log = logging.getLogger(__name__)
 
-class TestTemplate(unittest.TestCase):
-    param_prefix = '__param_'
-    stack_name = 'test_elk_stack'
-    keystone = ksclient.Client(auth_url="http://127.0.0.1:35357/v2.0",
-		   username="admin",
-		   password="secrete",
-		   tenant_name="admin")
-    endpoints = keystone.service_catalog.get_endpoints(service_type='orchestration')
-    endpoints.update(keystone.service_catalog.get_endpoints(service_type='network'))
-
-    heat_endpoint = endpoints['orchestration'][0]['publicURL']
-    neutron_endpoint = endpoints['network'][0]['publicURL']
+class TemplateTest(unittest.TestCase):
+    config = {"openstack":   {
+                              "user": "admin", 
+                              "password": "secrete", 
+                              "tenant_name": "admin",
+                              "net_name": "public"
+                             },
+              "heat_params": {
+                              "heat_keyname": "heat-key",
+                              "image": "Ubuntu 12.04 software config",
+                              "minion-count": 1,
+                              "minion-flavor": "m1.medium",
+                              "kibana-user": "admin",
+                              "kibana-password": "secrete"
+                             }
+             }
 
     @classmethod
     def setUpClass(self):
+        self.stack_name = 'test_elk_stack'
+        ostack_config = self.config['openstack']
+        self.keystone = ksclient.Client(auth_url="http://127.0.0.1:35357/v2.0",
+                                   username=ostack_config['user'],
+                                   password=ostack_config['password'],
+                                   tenant_name=ostack_config['tenant_name'])
+        endpoints = self.keystone.service_catalog.get_endpoints(service_type='orchestration')
+        endpoints.update(self.keystone.service_catalog.get_endpoints(service_type='network'))
+
+        self.heat_endpoint = endpoints['orchestration'][0]['publicURL']
+        self.neutron_endpoint = endpoints['network'][0]['publicURL']
+
         token = self.keystone.auth_token
 
         if self.heat_endpoint is None or self.neutron_endpoint is None:
             raise Exception('No endpoint found for either heat or neutron')
 
         neutron = neutron_client.Client('2.0', endpoint_url=self.neutron_endpoint, token=token)
-        pub_net = neutron.list_networks(name="public")['networks'][0]
+        pub_net = neutron.list_networks(name=ostack_config['net_name'])['networks'][0]
         heat = heat_client('1', endpoint=self.heat_endpoint, token=token)
-        params_list = {
-            'keyname': 'heat-key',
-            'image': 'Ubuntu 12.04 software config',
-            'floating-network-id': pub_net['id'],
-            'minion-count-elk': 1,
-            'minion-flavor-elk': 'm1.medium',
-            'kibana-user': 'admin',
-            'kibana-passwd': 'secrete'
-        }
+
+        heat_params = self.config['heat_params']
+        heat_params['floating-network-id'] = pub_net['id']
+        #params_list = {
+        #    'keyname': 'heat-key',
+        #    'image': 'Ubuntu 12.04 software config',
+        #    'floating-network-id': pub_net['id'],
+        #    'minion-count-elk': 1,
+        #    'minion-flavor-elk': 'm1.medium',
+        #    'kibana-user': 'admin',
+        #    'kibana-passwd': 'secrete'
+        #}
         
         fields = {
             'stack_name': self.stack_name,
             'timeout_mins': '120',
-            'parameters': dict(params_list),
+            'parameters': dict(heat_params)
         }
 
         template_data = ''
@@ -88,6 +107,7 @@ class TestTemplate(unittest.TestCase):
         heat = heat_client('1', endpoint=self.heat_endpoint, token=token)
         #heat.stacks.delete(self.test_stack_id)
 
+    @unittest.skip("test good. waiting to finish others")
     def test_elasticsearch(self):
         haproxy_ip = None
         for output in self.stack_info.outputs:
@@ -98,16 +118,19 @@ class TestTemplate(unittest.TestCase):
             raise Exception("Unable to find IP of stack VM")
 
         es = Elasticsearch([haproxy_ip])
-
+        doc = { "first_name" :  "Daniel", "last_name" : "Curran", "age" : 25, "about": "I like to compute", "interests":  [ "computers" ]}
+        es.create( index='megacorp', doc_type='employee', id='1', body=doc )
+        test_val = es.get(index='megacorp', doc_type='employee', id='1')
+        return_doc = test_val['_source']
+        self.assertTrue(test_val['found'])
+        self.assertTrue(doc == return_doc)
+         
         
-        print dir(es)
-        print es.search()
+    def test_logstash(self):
         
-
+        print "LOGSTASH"
+    
     #def test_kibana(self):
-    #    pass
-
-    #def test_logstash(self):
     #    pass
 
     def test_elk(self):
@@ -117,5 +140,11 @@ class TestTemplate(unittest.TestCase):
 if __name__ == '__main__':
     with open('test.yaml', 'r') as f:
         doc = yaml.load(f)
+        TemplateTest.config = doc
     unittest.main()
+    
+
+
+
+
 
