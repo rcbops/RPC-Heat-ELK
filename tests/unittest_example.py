@@ -26,12 +26,12 @@ class TemplateTest(unittest.TestCase):
                               "net_name": "public"
                              },
               "heat_params": {
-                              "heat_keyname": "heat-key",
+                              "keyname": "heat-key",
                               "image": "Ubuntu 12.04 software config",
-                              "minion-count": 1,
-                              "minion-flavor": "m1.medium",
+                              "minion-count-elk": 1,
+                              "minion-flavor-elk": "m1.medium",
                               "kibana-user": "admin",
-                              "kibana-password": "secrete"
+                              "kibana-passwd": "secrete"
                              }
              }
 
@@ -83,9 +83,9 @@ class TemplateTest(unittest.TestCase):
         with open('../env.yaml') as f:
             fields['environment'] = f.read()
 
-        #test_stack = heat.stacks.create(**fields)
-        #self.test_stack_id = test_stack['stack']['id']
-        self.test_stack_id = 'f9eec6db-cc62-4fe9-b5e7-5a49dc559fa1'
+        test_stack = heat.stacks.create(**fields)
+        self.test_stack_id = test_stack['stack']['id']
+        #self.test_stack_id = 'f9eec6db-cc62-4fe9-b5e7-5a49dc559fa1'
 
         while True:
             self.stack_info = heat.stacks.get(self.test_stack_id)
@@ -105,7 +105,7 @@ class TemplateTest(unittest.TestCase):
         self.keystone.authenticate()
         token = self.keystone.auth_token
         heat = heat_client('1', endpoint=self.heat_endpoint, token=token)
-        #heat.stacks.delete(self.test_stack_id)
+        heat.stacks.delete(self.test_stack_id)
 
     @unittest.skip("test good. waiting to finish others")
     def test_elasticsearch(self):

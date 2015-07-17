@@ -5,9 +5,9 @@ openstack:
   tenant_name: admin
   net_name: public
 heat_params:
-  heat_keyname: heat-key
+  keyname: heat-key
   image: Ubuntu 12.04 software config
-  minion-count: 1
-  minion-flavor: m1.medium
+  minion-count-elk: 1
+  minion-flavor-elk: m1.medium
   kibana-user: admin
-  kibana-password: secrete
+  kibana-passwd: secrete
