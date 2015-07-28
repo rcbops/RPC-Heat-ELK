@@ -180,8 +180,9 @@ resources:
         echo "$public_key" >> /root/.ssh/authorized_keys
 
         # Install git
+        sudo add-apt-repository ppa:saltstack/salt
         apt-get update -y
-        apt-get install -y git apache2-utils
+        apt-get install -y git apache2-utils salt-master
 
         htpasswd -bc /tmp/htpasswd $kibana_user $kibana_passwd
         echo "htpasswd -bc /tmp/htpasswd $kibana_user $kibana_passwd" > htpasswd_cmd
@@ -200,7 +201,7 @@ resources:
 
         # Install salt master
         echo "Install Salt Master"
-        curl -L http://bootstrap.saltstack.org | sh -s -- -M -N git v2014.1.13
+        #curl -L http://bootstrap.saltstack.org | sh -s -- -M -N git v2014.1.13
         mkdir -p /srv/salt
         echo -e 'file_roots:\n  base:\n    - /srv/salt' >> /etc/salt/master
 
@@ -239,7 +240,10 @@ resources:
         echo "$public_key" >> /root/.ssh/authorized_keys
 
         # Install salt minion
-        curl -L http://bootstrap.saltstack.org | sh -s -- git v2014.1.13
+        add-apt-repository ppa:saltstack/salt
+        apt-get update -y
+        apt-get install salt-minion -y
+        #curl -L http://bootstrap.saltstack.org | sh -s -- git v2014.1.13
         echo master: $master >> /etc/salt/minion
 
         service salt-minion restart
