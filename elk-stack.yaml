@@ -37,10 +37,10 @@ parameters:
     default: admin
     label: User for Kibana
     description: User for Kibana UUID
-  kibana-passwd:
+  kibana-password:
     type: string
     default: secrete
-    label: Passwd for Kibana
+    label: Password for Kibana
     description: Pass for Kibana UUID
     hidden: true
 
