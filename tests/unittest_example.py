@@ -4,6 +4,7 @@ import logging
 import time
 import unittest
 import yaml
+import paramiko
 
 from uuid import uuid4
 from nose import SkipTest
@@ -60,15 +61,6 @@ class TemplateTest(unittest.TestCase):
 
         heat_params = self.config['heat_params']
         heat_params['floating-network-id'] = pub_net['id']
-        #params_list = {
-        #    'keyname': 'heat-key',
-        #    'image': 'Ubuntu 12.04 software config',
-        #    'floating-network-id': pub_net['id'],
-        #    'minion-count-elk': 1,
-        #    'minion-flavor-elk': 'm1.medium',
-        #    'kibana-user': 'admin',
-        #    'kibana-passwd': 'secrete'
-        #}
         
         fields = {
             'stack_name': self.stack_name,
@@ -83,9 +75,9 @@ class TemplateTest(unittest.TestCase):
         with open('../env.yaml') as f:
             fields['environment'] = f.read()
 
-        test_stack = heat.stacks.create(**fields)
-        self.test_stack_id = test_stack['stack']['id']
-        #self.test_stack_id = 'f9eec6db-cc62-4fe9-b5e7-5a49dc559fa1'
+        #test_stack = heat.stacks.create(**fields)
+        #self.test_stack_id = test_stack['stack']['id']
+        self.test_stack_id = '0f520059-90b4-475b-b27a-b2655e028b06'
 
         while True:
             self.stack_info = heat.stacks.get(self.test_stack_id)
@@ -105,7 +97,7 @@ class TemplateTest(unittest.TestCase):
         self.keystone.authenticate()
         token = self.keystone.auth_token
         heat = heat_client('1', endpoint=self.heat_endpoint, token=token)
-        heat.stacks.delete(self.test_stack_id)
+        #heat.stacks.delete(self.test_stack_id)
 
     @unittest.skip("test good. waiting to finish others")
     def test_elasticsearch(self):
@@ -127,11 +119,54 @@ class TemplateTest(unittest.TestCase):
          
         
     def test_logstash(self):
+        haproxy_ip = None
+        for output in self.stack_info.outputs:
+            if output['output_key'] == 'minion-haproxy-ip':
+                haproxy_ip = output['output_value']
+
+        if haproxy_ip is None:
+            raise Exception("Unable to find IP of stack VM")
+
+        import httplib, urllib
+        test_string = "LOGSTASH_TEST_%s" % uuid4() 
         
-        print "LOGSTASH"
+        headers = {"Content-type": "text/plain", "Accept": "text/plain"}
+        conn = httplib.HTTPConnection(haproxy_ip, 8080)
+        conn.request("POST", "", test_string, headers)
+        response = conn.getresponse()
+        self.assertTrue(response.status == 200)
+	
+        #NEEDS A MOMENT FOR CoMMUNICATIONS
+        time.sleep(10)
+
+        es = Elasticsearch([haproxy_ip])
+        test_search = es.search(index="http_test", body={"query": {"match": {"message": test_string}}})
+        self.assertTrue(test_search["hits"]["total"] > 0)
+        
+        return_string = test_search["hits"]["hits"][0]["_source"]["message"]
+        self.assertTrue(test_string == return_string)
     
-    #def test_kibana(self):
-    #    pass
+    def test_kibana(self):
+        master_ip = None
+        for output in self.stack_info.outputs:
+            if output['output_key'] == 'master-ip':
+                master_ip = output['output_value']
+        if master_ip is None:
+            raise Exception("Unable to find IP of stack VM")
+
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        k = paramiko.RSAKey.from_private_key_file("/home/stack/.ssh/id_rsa")
+        ssh.connect(master_ip, username="ec2-user", pkey = k)
+        print "connected"
+        commands = [ "whoami" ]
+        for command in commands:
+            print "Executing {}".format( command )
+            stdin , stdout, stderr = ssh.exec_command(command)
+            print stdout.read()
+            print( "Errors")
+            print stderr.read()
+        ssh.close()
 
     def test_elk(self):
         print "TEST1"
