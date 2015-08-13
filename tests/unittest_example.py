@@ -75,9 +75,8 @@ class TemplateTest(unittest.TestCase):
         with open('../env.yaml') as f:
             fields['environment'] = f.read()
 
-        #test_stack = heat.stacks.create(**fields)
-        #self.test_stack_id = test_stack['stack']['id']
-        self.test_stack_id = '0f520059-90b4-475b-b27a-b2655e028b06'
+        test_stack = heat.stacks.create(**fields)
+        self.test_stack_id = test_stack['stack']['id']
 
         while True:
             self.stack_info = heat.stacks.get(self.test_stack_id)
@@ -97,9 +96,8 @@ class TemplateTest(unittest.TestCase):
         self.keystone.authenticate()
         token = self.keystone.auth_token
         heat = heat_client('1', endpoint=self.heat_endpoint, token=token)
-        #heat.stacks.delete(self.test_stack_id)
+        heat.stacks.delete(self.test_stack_id)
 
-    @unittest.skip("test good. waiting to finish others")
     def test_elasticsearch(self):
         haproxy_ip = None
         for output in self.stack_info.outputs:
@@ -158,19 +156,13 @@ class TemplateTest(unittest.TestCase):
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         k = paramiko.RSAKey.from_private_key_file("/home/stack/.ssh/id_rsa")
         ssh.connect(master_ip, username="ec2-user", pkey = k)
-        print "connected"
-        commands = [ "whoami" ]
-        for command in commands:
-            print "Executing {}".format( command )
+        commands = [ ("sudo salt '*server*' cmd.run 'service nginx status' --out=json", " * nginx is running") ]
+        for command, output in commands:
             stdin , stdout, stderr = ssh.exec_command(command)
-            print stdout.read()
-            print( "Errors")
-            print stderr.read()
+            output_json = json.loads(stdout.read())
+            for server,response in output_json.items():
+                self.assertTrue(response == output)
         ssh.close()
-
-    def test_elk(self):
-        print "TEST1"
-
 
 if __name__ == '__main__':
     with open('test.yaml', 'r') as f:
